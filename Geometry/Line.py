@@ -26,6 +26,13 @@ class Line:
             return Line(self.point1, other.point1)
         raise NotImplementedError
 
+    def return_other(self, point):
+        if self.point1 == point:
+            return self.point2
+        elif self.point2 == point:
+            return self.point1
+        return None
+
     def is_connected_to(self, line):
         if self != line:
             return self.point1 in line or self.point2 in line

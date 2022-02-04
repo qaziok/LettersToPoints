@@ -8,7 +8,7 @@ if __name__ == '__main__':
     punkty = ListOfPoints()
     linie = ListOfLines()
     letter = numpy.zeros((600, 800), dtype="uint8")
-    sign = 'A'
+    sign = ' '
     cv2.putText(letter, sign, (5, 590), cv2.FONT_HERSHEY_DUPLEX, 27, (255, 255, 255), 1)
     canny = np.float32(letter)
     dst = cv2.cornerHarris(canny, 5, 3, 0.02)
@@ -34,7 +34,7 @@ if __name__ == '__main__':
             for x1, y1, x2, y2 in line:
                 p1 = punkty.add((round(x1), round(y1)))
                 p2 = punkty.add((round(x2), round(y2)))
-                linie.add(p1, p2)
+                #linie.add(p1, p2)
 
     punkty.normalize()
     punkty.scale(1)
@@ -77,6 +77,6 @@ if __name__ == '__main__':
     cv2.setMouseCallback('image', mouse_event, param=[rysowanieLinii])
     cv2.waitKey(0)
     linie.desmos()
-    linie.xlib()
+    #linie.xlib()
 
     cv2.destroyAllWindows()

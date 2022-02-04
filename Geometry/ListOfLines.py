@@ -1,6 +1,6 @@
 from Geometry.Line import Line
 from Geometry.Point import Point
-from copy import deepcopy
+from Geometry.Curve import Curve
 from cv2 import line
 
 class ListOfLines(list):
@@ -13,7 +13,6 @@ class ListOfLines(list):
         line = Line(point1,point2)
         if line not in self:
             self.append(line)
-
 
     def delete_point(self, point: Point):
         if Point is not None:
@@ -30,40 +29,23 @@ class ListOfLines(list):
             if self.independent_lines:
                 added = False
                 for curve in self.independent_lines:
-                    if curve[0].is_connected_to(line):
-                        curve.insert(0, line)
-                        added = True
-                        break
-                    elif curve[-1].is_connected_to(line):
-                        curve.append(line)
-                        added = True
+                    added = curve.add(line)
+                    if added:
                         break
                 if not added:
-                    self.independent_lines.append([line])
+                    self.independent_lines.append(Curve(line))
             else:
-                self.independent_lines.append([line])
+                self.independent_lines.append(Curve(line))
 
         used_indexes = set()
         for main_index in range(len(self.independent_lines)):
             if main_index in used_indexes:
                 continue
-            for marge_index in range(main_index,len(self.independent_lines)):
-                if main_index == marge_index or marge_index in used_indexes:
+            for merge_index in range(main_index, len(self.independent_lines)):
+                if main_index == merge_index or merge_index in used_indexes:
                     continue
-                elif self.independent_lines[main_index][0].is_connected_to(self.independent_lines[marge_index][0]): #pierwsze takie same - odwroc i dodaj na poczatek
-                    self.independent_lines[marge_index].reverse()
-                    self.independent_lines[main_index] = self.independent_lines[marge_index] + self.independent_lines[main_index]
-                    used_indexes.add(marge_index)
-                elif self.independent_lines[main_index][-1].is_connected_to(self.independent_lines[marge_index][-1]): #ostatnie takie same - odwroc i dodaj na koniec
-                    self.independent_lines[marge_index].reverse()
-                    self.independent_lines[main_index] = self.independent_lines[main_index] + self.independent_lines[marge_index]
-                    used_indexes.add(marge_index)
-                elif self.independent_lines[main_index][0].is_connected_to(self.independent_lines[marge_index][-1]): #pierwszy taki jak ostatni - dodaj na poczatek
-                    self.independent_lines[main_index] = self.independent_lines[marge_index] + self.independent_lines[main_index]
-                    used_indexes.add(marge_index)
-                elif self.independent_lines[main_index][-1].is_connected_to(self.independent_lines[marge_index][0]): #ostatni taki jak pierwszy - dodaj na koniec
-                    self.independent_lines[main_index] = self.independent_lines[main_index] + self.independent_lines[marge_index]
-                    used_indexes.add(marge_index)
+                if self.independent_lines[main_index].check_merge(self.independent_lines[merge_index]):
+                    used_indexes.add(merge_index)
 
         for i in range(len(self.independent_lines)):
             if i in used_indexes:
@@ -76,18 +58,23 @@ class ListOfLines(list):
     def generate_lines(self):
         self.update_lines()
         self.points.clear()
-        for i, curve in enumerate(self.independent_lines):
+        i = 0
+        for curve in self.independent_lines:
             if curve:
+                curve.draw()
                 self.points.append([])
                 tmp_point = None
                 for line_index in range(len(curve)-1):
                     tmp_line = curve[line_index] - curve[line_index+1]
                     self.points[i].append(tmp_line.point1)
                     tmp_point = tmp_line.point2
-                if tmp_point:
-                    tmp_line = curve[-1] - tmp_line
-                    self.points[i].append(tmp_line.point1)
-                    self.points[i].append(tmp_point)
+
+                if tmp_point is None:
+                    tmp_point = curve[-1].point1
+
+                self.points[i].append(curve[-1].return_other(tmp_point))
+                self.points[i].append(tmp_point)
+                i+=1
 
 
     def desmos(self):
