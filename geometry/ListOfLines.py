@@ -1,6 +1,6 @@
-from Geometry.Line import Line
-from Geometry.Point import Point
-from Geometry.Curve import Curve
+from geometry.Line import Line
+from geometry.Point import Point
+from geometry.Curve import Curve
 from cv2 import line
 
 class ListOfLines(list):
@@ -41,7 +41,7 @@ class ListOfLines(list):
         for main_index in range(len(self.independent_lines)):
             if main_index in used_indexes:
                 continue
-            for merge_index in range(main_index, len(self.independent_lines)):
+            for merge_index in range(0, len(self.independent_lines)):
                 if main_index == merge_index or merge_index in used_indexes:
                     continue
                 if self.independent_lines[main_index].check_merge(self.independent_lines[merge_index]):
@@ -52,8 +52,8 @@ class ListOfLines(list):
                 self.independent_lines[i].clear()
 
     def draw(self, image):
-        for l in self:
-            line(image, l.point1.tuple(), l.point2.tuple(), (1, 0, 0), 3)
+        for line_to_draw in self:
+            line(image, line_to_draw.point1.tuple(), line_to_draw.point2.tuple(), (255, 0, 0), 3)
 
     def generate_lines(self):
         self.update_lines()
@@ -74,7 +74,7 @@ class ListOfLines(list):
 
                 self.points[i].append(curve[-1].return_other(tmp_point))
                 self.points[i].append(tmp_point)
-                i+=1
+                i += 1
 
 
     def desmos(self):
@@ -94,3 +94,10 @@ class ListOfLines(list):
     #TODO GDI - żaba
     #TODO DirectX - inicjały 3D
     #TODO OpenGL - prostokąty i ściany
+
+    def delete(self, coords: tuple):
+        for line in self:
+            if line.point1.distance(coords) + line.point2.distance(coords) <= len(line) + 1:
+                self.remove(line)
+                return True
+        return False

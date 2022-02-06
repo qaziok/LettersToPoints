@@ -1,13 +1,13 @@
-from Geometry.Point import Point
+from geometry.Point import Point
 from copy import deepcopy
 
 
 class ListOfPoints(list):
-    def add(self, coords: tuple):
+    def add(self, coords: tuple, check_range=20):
         point = Point(coords)
         if len(self):
             for p in self:
-                if p.is_near(coords, check_range=20):
+                if p.is_near(coords, check_range=check_range):
                     return p
             self.append(point)
             return point

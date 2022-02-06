@@ -1,10 +1,13 @@
-from Geometry.Point import Point
+from geometry.Point import Point
 
 
 class Line:
     def __init__(self, point1: Point, point2: Point):
         self.point1 = point1
         self.point2 = point2
+
+    def __len__(self):
+        return int(self.point1.distance(self.point2.tuple()))
 
     def __contains__(self, item: Point):
         return self.point1 == item or self.point2 == item

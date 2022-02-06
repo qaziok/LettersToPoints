@@ -1,4 +1,4 @@
-from Geometry.Line import Line
+from geometry.Line import Line
 
 
 class Curve(list):
@@ -6,7 +6,7 @@ class Curve(list):
         super().__init__()
         self.start_point = first_line.point1
         self.end_point = first_line.point2
-        super().append(first_line)
+        self.append(first_line)
 
     def add(self, new_line: Line):
         if self.start_point in new_line:

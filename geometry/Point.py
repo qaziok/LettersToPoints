@@ -24,8 +24,8 @@ class Point:
         return '{'+f'{self.x},{self.y}'+'}'
 
     def rescale(self, scale):
-        self.x *= scale
-        self.y *= scale
+        self.x = int(self.x * scale)
+        self.y = int(self.y * scale)
 
     def is_near(self, coords: tuple, check_range=10):
         dist = self.distance(coords)
@@ -41,6 +41,10 @@ class Point:
 
     def draw(self, image):
         point = (self.x, self.y)
-        circle(image, point, 2, (1, 0, 0), -1)
-        circle(image, point, 5, (0, 1, 0))
-        circle(image, point, 10, (1, 0, 1))
+        circle(image, point, 2, (255, 0, 0), -1)
+        circle(image, point, 5, (0, 255, 0))
+        circle(image, point, 10, (255, 0, 255))
+
+    def move(self,coords: tuple):
+        self.x = coords[0]
+        self.y = coords[1]
