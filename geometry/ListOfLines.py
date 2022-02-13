@@ -3,6 +3,7 @@ from geometry.Point import Point
 from geometry.Curve import Curve
 from cv2 import line
 
+
 class ListOfLines(list):
     def __init__(self):
         super().__init__()
@@ -61,7 +62,7 @@ class ListOfLines(list):
         i = 0
         for curve in self.independent_lines:
             if curve:
-                curve.draw()
+                # curve.draw()
                 self.points.append([])
                 tmp_point = None
                 for line_index in range(len(curve)-1):
@@ -76,20 +77,32 @@ class ListOfLines(list):
                 self.points[i].append(tmp_point)
                 i += 1
 
+    def find_axis(self, axis):
+        max = -1
+        min = 1000
+        for line in self.points:
+            for p in line:
+                tmp = getattr(p, axis)
+                max = tmp if tmp > max else max
+                min = tmp if tmp < min else min
+        return min+round((max-min)/2)
 
-    def desmos(self):
-        def to_str_better(p):
-            return p.desmos()
+    def line_output(self, sign, mode, type, do_center, do_shift, scale):
         self.generate_lines()
-        for point_line in self.points:
-            print(','.join(map(to_str_better, point_line)))
+        center_x = self.find_axis('x') if do_center[0] else 0
+        center_y = self.find_axis('y') if do_center[1] else 0
+        def to_str_better(p):
+            return p.transform(mode, type, center_x, center_y, do_shift[0], do_shift[1], scale)
+        output = []
+        if mode == 0:
+            for point_line in self.points:
+                output.append(','.join(map(to_str_better, point_line)))
+        elif mode == 1:
+            for i, point_line in enumerate(self.points):
+                output.append(''.join([f'XPoint {sign}_{i + 1}[', str(len(point_line)), '] = {',
+                                       ','.join(map(to_str_better, point_line)), '};']))
+        return '\n'.join(output)
 
-    def xlib(self):
-        def to_str_better(p):
-            return p.xlib()
-        self.generate_lines()
-        for i,point_line in enumerate(self.points):
-            print(f'XPoint test{i+1}[',len(point_line),'] = {',','.join(map(to_str_better, point_line)),'};',sep='')
 
     #TODO GDI - żaba
     #TODO DirectX - inicjały 3D

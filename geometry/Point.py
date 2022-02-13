@@ -1,6 +1,6 @@
 from math import sqrt
 from cv2 import circle
-
+from geometry.conversion import *
 
 class Point:
     def __init__(self, *args):
@@ -10,6 +10,7 @@ class Point:
         else:  # tuple
             self.x = args[0][0]
             self.y = args[0][1]
+        self.clicked = False
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
@@ -17,11 +18,22 @@ class Point:
     def __str__(self):
         return f'({self.x},{self.y})'
 
-    def desmos(self):
-        return f'({self.x},{600-self.y})'
+    def transform(self,mode, type, center_x, center_y, shift_x, shift_y, scale):
+        rond = 0 if type == int else 2
+        new_x = round(type((self.x-center_x)*scale + shift_x), rond)
+        new_y = round(type((self.y-center_y)*scale + shift_y), rond)
+        if mode == 0:
+            return desmos(new_x, new_y)
+        if mode == 1:
+            return xlib(new_x,new_y)
 
-    def xlib(self):
-        return '{'+f'{self.x},{self.y}'+'}'
+    def desmos(self, type, scale=1):
+        if type == float:
+            return f'({round(type(self.x * scale),2)},{round(type(-self.y * scale),2)})'
+        return f'({type(self.x*scale)},{type(-self.y*scale)})'
+
+    def xlib(self,scale=1):
+        return f'({int(self.x*scale)},{int(self.y*scale)})'
 
     def rescale(self, scale):
         self.x = int(self.x * scale)
@@ -41,9 +53,14 @@ class Point:
 
     def draw(self, image):
         point = (self.x, self.y)
-        circle(image, point, 2, (255, 0, 0), -1)
-        circle(image, point, 5, (0, 255, 0))
-        circle(image, point, 10, (255, 0, 255))
+        if self.clicked:
+            circle(image, point, 2, (0, 0, 255), -1)
+            circle(image, point, 5, (255, 0, 0))
+            circle(image, point, 10, (0, 255, 255))
+        else:
+            circle(image, point, 2, (255, 0, 0), -1)
+            circle(image, point, 5, (0, 255, 0))
+            circle(image, point, 10, (255, 0, 255))
 
     def move(self,coords: tuple):
         self.x = coords[0]

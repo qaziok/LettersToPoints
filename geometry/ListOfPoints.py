@@ -27,7 +27,7 @@ class ListOfPoints(list):
         for p in self:
             if p.is_near(coords):
                 return p
-        return False
+        return None
 
     def normalize(self):
         dist = 5
@@ -49,5 +49,5 @@ class ListOfPoints(list):
     def desmos(self):
         to_marge = []
         for p in self:
-            to_marge.append(f'({p.x},{600-p.y})')
+            to_marge.append(f'({p.x},{-p.y})')
         print(','.join(to_marge))

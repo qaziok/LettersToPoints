@@ -21,9 +21,9 @@ class Curve(list):
 
     def draw(self):
         first = self.start_point
-        print('C:',end=' ')
+        print('C:', end=' ')
         for line in self:
-            print(f'({first}',end=',')
+            print(f'({first}', end=',')
             first = line.return_other(first)
             print(f'{first})', end=',')
         print()
@@ -31,7 +31,7 @@ class Curve(list):
     def check_merge(self, other):
         if self.start_point == other.start_point:  # pierwsze takie same - odwroc i dodaj na poczatek
             for l in other:
-                self.insert(0,l)
+                self.insert(0, l)
             self.start_point = other.end_point
         elif self.end_point == other.end_point:  # ostatnie takie same - odwroc i dodaj na koniec
             other.reverse()
