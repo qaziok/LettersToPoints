@@ -1,7 +1,7 @@
 from geometry.Line import Line
 
 
-class Curve(list):
+class Polyline(list):
     def __init__(self, first_line: Line):
         super().__init__()
         self.start_point = first_line.point1

@@ -13,7 +13,7 @@ class ImageProcessing:
     def __init__(self, lab=0, size=(800, 700, 3)):
         self.lab = lab
         self.size = size
-        self.sign = 'pusty'
+        self.sign = ''
         self.points = ListOfPoints()
         self.lines = ListOfLines()
         self.image = None
@@ -24,15 +24,40 @@ class ImageProcessing:
         self.taken_point = None
         # rysowanie i łączenie kubicznych krzywych beziera
         self.cubic_bezier = Bezier()
-        self.buffer = Buffer(4)
         # rysowanie trójkątów
+        self.triangles = ListOfTriangles()
+        if lab == 2:
+            self.buffer = Buffer(4)
+        elif lab in (3, 4):
+            self.buffer = Buffer(3)
+        else:
+            self.buffer = Buffer(0)
 
+    def clear(self, lab):
+        self.lab = lab
+        self.sign = ''
+        self.points = ListOfPoints()
+        self.lines = ListOfLines()
+        self.image = None
+        self.rgb_image = None
+        self.last_drawn_image = np.zeros(self.size, dtype="uint8")
+        self.last_point = None
+        self.taken_point = None
+        self.cubic_bezier = Bezier()
+        self.triangles = ListOfTriangles()
+        if lab == 2:
+            self.buffer = Buffer(4)
+        elif lab in (3, 4):
+            self.buffer = Buffer(3)
+        else:
+            self.buffer = Buffer(0)
 
     def generate_sign(self, sign, mode=2):
         self.sign = sign
         self.image = np.zeros(self.size, dtype="uint8")
-        cv2.putText(self.image, sign, (5, int(570 * self.size[0] / 800)),
-                    cv2.FONT_HERSHEY_DUPLEX, int(26 * self.size[0] / 800), (255, 255, 255), 1)
+        if mode >= 1:
+            cv2.putText(self.image, sign, (5, int(570 * self.size[0] / 800)),
+                        cv2.FONT_HERSHEY_DUPLEX, int(26 * self.size[0] / 800), (255, 255, 255), 1)
         self.rgb_image = self.image.copy()
         if mode in (2, 3):
             gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -76,30 +101,29 @@ class ImageProcessing:
         self.__last_point = new
         if new:
             self.__last_point.clicked = True
-            #self.buffer.append(new)
-            #if self.buffer.full():
-             #   self.cubic_bezier.add_new_curve(self.buffer)
-              #  self.buffer.append(new)
 
     def draw_and_update(self, image):
+        if self.lab == 2:
+            self.cubic_bezier.draw(image)
+        if self.lab in (3, 4):
+            self.triangles.draw(image)
+        if self.lab != 2:
+            self.lines.draw(image)
         self.points.draw(image)
-        self.lines.draw(image)
-        #self.cubic_bezier.draw(image)
+        self.buffer.draw(image)
         self.last_drawn_image = image
 
     def mouse_over(self, coords: tuple):
         tmp = self.last_drawn_image.copy()
-        if self.last_point:
-            cv2.arrowedLine(tmp, self.last_point.tuple(), coords, (127, 0, 0), 2)
-        elif self.taken_point:
+        if self.taken_point:
             self.draw_and_update(self.rgb_image.copy())
-            # cv2.circle(tmp, self.taken_point.tuple(),3,(0,127,0),-1)
+        elif self.last_point:
+            cv2.arrowedLine(tmp, self.last_point.tuple(), coords, (127, 0, 0), 2)
+
         return tmp
 
     def take_point(self, coords: tuple):
         self.taken_point = self.points.check(coords)
-        if self.taken_point and self.last_point:
-            self.last_point = None
 
     def move_point(self, coords: tuple):
         if self.taken_point:
@@ -117,26 +141,48 @@ class ImageProcessing:
         self.last_point = clicked_point
         self.draw_and_update(self.rgb_image.copy())
 
-    def point_or_line_delete(self, coords: tuple):
+    def point_delete(self, coords: tuple):
         deleted_point = self.points.delete(coords)
         if deleted_point:
             self.lines.delete_point(deleted_point)
             for b in self.cubic_bezier:
                 if deleted_point in b:
                     self.cubic_bezier.remove(b)
-        else:  # check line
-            deleted_line = self.lines.delete(coords)
         self.last_point = None
         self.draw_and_update(self.rgb_image.copy())
 
-    def clear(self):
-        self.points = ListOfPoints()
-        self.lines = ListOfLines()
-        self.image = None
-        self.sign = 'pusty'
-        self.rgb_image = None
-        self.last_drawn_image = np.zeros(self.size, dtype="uint8")
-        self.last_point = None
+    def line_delete(self, coords: tuple):
+        self.lines.delete(coords)
+        self.cubic_bezier.delete(coords)
+        self.triangles.delete(coords)
+        self.draw_and_update(self.rgb_image.copy())
 
-    def output(self, mode, type, do_center, do_shift, scale):
-        return self.lines.line_output(self.sign, mode, type, do_center, do_shift, scale)
+    def add_to_buffer(self, coords: tuple):
+        point = self.points.check(coords)
+        if point and point not in self.buffer:
+            self.buffer.append(point)
+        if self.buffer.full():
+            if self.lab == 2:
+                self.cubic_bezier.add_new_curve(self.buffer)
+            elif self.lab in (3, 4):
+                self.triangles.add_new_triangle(self.buffer)
+        self.draw_and_update(self.rgb_image.copy())
+
+    def delete_from_buffer(self, coords: tuple):
+        point = self.points.check(coords)
+        if point:
+            try:
+                self.buffer.remove(point)
+            except ValueError:
+                pass
+        self.draw_and_update(self.rgb_image.copy())
+
+    def output(self, type, do_center, do_shift, scale):
+        output = []
+        if self.lab in (0, 1, 3):
+            output.append(self.lines.line_output(self.sign, self.lab, type, do_center, do_shift, scale))
+        elif self.lab == 2:
+            output.append(self.cubic_bezier.output(self.sign, self.lab, type, do_center, do_shift, scale))
+        if self.lab == 3:
+            output.append(self.triangles.output(self.points))
+        return '\n'.join(output)

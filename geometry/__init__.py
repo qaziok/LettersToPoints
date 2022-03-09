@@ -5,3 +5,4 @@ from geometry.ListOfLines import *
 from geometry.conversion import *
 from geometry.Buffer import *
 from geometry.Bezier import *
+from geometry.Triangles import *

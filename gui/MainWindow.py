@@ -63,7 +63,7 @@ class Ui_MainWindow(object):
         distance += 20
         self.scale = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.scale.setGeometry(QtCore.QRect(20, distance, 230, 30))
-        self.scale.setRange(0.01, 100)
+        self.scale.setRange(0.001, 100)
         self.scale.setSingleStep(0.1)
         self.scale.setObjectName("scale")
         self.scale.setValue(1.0)
@@ -191,23 +191,18 @@ class Ui_MainWindow(object):
         self.menuPomoc.setTitle(_translate("MainWindow", "Pomoc"))
 
     def print_output(self):
-        option = self.lab.currentIndex()
         center_check = (self.center_x.isChecked(),self.center_y.isChecked())
         shift_check = (self.shiftX_box.value(),self.shiftY_box.value())
         self.output.setText(
-            self.controller.output(
-                option, self.data_type, center_check, shift_check, self.scale.value()
+            self.controller.output(self.data_type, center_check, shift_check, self.scale.value()
             )
         )
 
     def generate_image(self):
         self.generate_check.setChecked(False)
         letter = self.sign.text()
-        self.controller.clear()
-        if self.mode.currentIndex():
-            self.controller.generate_sign(letter, mode=self.mode.currentIndex())
-        else:
-            self.controller.generate_sign('',mode=0)
+        self.controller.clear(self.lab.currentIndex())
+        self.controller.generate_sign(letter, mode=self.mode.currentIndex())
         self.image_preview.image_update(self.controller.last_drawn_image)
 
     def lock_unlock_generate_button(self):

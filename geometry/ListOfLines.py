@@ -1,6 +1,6 @@
 from geometry.Line import Line
 from geometry.Point import Point
-from geometry.Curve import Curve
+from geometry.Polyline import Polyline
 from cv2 import line
 
 
@@ -11,9 +11,10 @@ class ListOfLines(list):
         self.points = []
 
     def add(self, point1: Point, point2: Point):
-        line = Line(point1,point2)
-        if line not in self:
-            self.append(line)
+        if point1 != point2:
+            line = Line(point1,point2)
+            if line not in self:
+                self.append(line)
 
     def delete_point(self, point: Point):
         if Point is not None:
@@ -34,9 +35,9 @@ class ListOfLines(list):
                     if added:
                         break
                 if not added:
-                    self.independent_lines.append(Curve(line))
+                    self.independent_lines.append(Polyline(line))
             else:
-                self.independent_lines.append(Curve(line))
+                self.independent_lines.append(Polyline(line))
 
         used_indexes = set()
         for main_index in range(len(self.independent_lines)):
@@ -101,6 +102,11 @@ class ListOfLines(list):
             for i, point_line in enumerate(self.points):
                 output.append(''.join([f'XPoint {sign}_{i + 1}[', str(len(point_line)), '] = {',
                                        ','.join(map(to_str_better, point_line)), '};']))
+        elif mode == 3:
+            for i, point_line in enumerate(self.points):
+                output.append(''.join([f'SimpleVertex {sign}_{i + 1}[] =', '{',
+                                       ','.join(map(to_str_better, point_line)), '};']))
+                output.append(f'int {sign}_{i + 1}_amount = {len(point_line)*2};')
         return '\n'.join(output)
 
 

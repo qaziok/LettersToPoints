@@ -18,14 +18,21 @@ class Point:
     def __str__(self):
         return f'({self.x},{self.y})'
 
+    def __hash__(self):
+        return 19*self.x+7*self.y
+
     def transform(self,mode, type, center_x, center_y, shift_x, shift_y, scale):
         rond = 0 if type == int else 2
         new_x = round(type((self.x-center_x)*scale + shift_x), rond)
         new_y = round(type((self.y-center_y)*scale + shift_y), rond)
         if mode == 0:
             return desmos(new_x, new_y)
-        if mode == 1:
-            return xlib(new_x,new_y)
+        elif mode == 1:
+            return xlib(new_x, new_y)
+        elif mode == 2:
+            return gdi(new_x, new_y)
+        elif mode == 3:
+            return directx(new_x, new_y)
 
     def desmos(self, type, scale=1):
         if type == float:
